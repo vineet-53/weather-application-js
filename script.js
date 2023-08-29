@@ -48,7 +48,25 @@ function wantLoaderVisible(state) {
 
 // const API = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_AUTH}`;
 // const API = `https://api.openweathermap.org/data/2.5/weather?q=${searchInput.value}&appid=${API_AUTH}`;
-
+function switchTo(clickedTab) {
+  if (clickedTab != currentTab) {
+    currentTab.classList.remove("active-tab");
+    currentTab = clickedTab;
+    currentTab.classList.add("active-tab");
+  }
+  if(clickedTab == userTab){ 
+    // show weather
+    weatherInterface.classList.add('active')
+    // hide search interface
+    searchWeatherInterface.classList.remove('active')
+  }
+  else{ 
+    // hide weather tab
+    weatherInterface.classList.remove('active')
+    // show search tab
+    searchWeatherInterface.classList.add('active')
+  }
+}
 function handleUserTab() {
   switchTo(userTab);
 }
