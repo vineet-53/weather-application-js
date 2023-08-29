@@ -155,5 +155,5 @@ function handleFormClick(event) {
 userTab.addEventListener("click", handleUserTab);
 searchTab.addEventListener("click", handleSearchTab);
 grantAccessButton.addEventListener("click", handleGrantLocation);
-searchForm.addEventListener('click' , handleFormClick);
+searchForm.addEventListener('submit' , handleFormClick);
 window.addEventListener("load", setAttributesOnPageLoad);
