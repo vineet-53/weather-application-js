@@ -35,12 +35,14 @@ function renderChangesToUi(data) {
   )} deg C`;
   cloudDesc.textContent = data?.weather?.[0]?.description;
 }
-function setUserCoords(position) {
-  let userCoordinates = {
-    lat: position.coords.latitude,
-    lon: position.coords.longitude,
-  };
-  sessionStorage.setItem("user-coordinates", JSON.stringify(userCoordinates));
+async function setUserCoords(position) {
+  navigator.geolocation.getCurrentPosition((position) => {
+    let userCoordinates = {
+      lat: position.coords.latitude,
+      lon: position.coords.longitude,
+    };
+    sessionStorage.setItem("user-coordinates", JSON.stringify(userCoordinates));
+  });
 }
 function wantLoaderVisible(state) {
   state ? loader.classList.add("active") : loader.classList.remove("active");
@@ -55,29 +57,51 @@ async function fetchWeatherData(API) {
 function getUserCoords() {
   return JSON.parse(sessionStorage.getItem("user-coordinates"));
 }
-// const API = `https://api.openweathermap.org/data/2.5/weather?q=${searchInput.value}&appid=${API_AUTH}`;
+// 
 async function userWeatherData() {
-  let coords = getUserCoords();
-  const { lat, lon } = coords;
+  let coords = await getUserCoords();
+  let { lat, lon } = coords;
   const API = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_AUTH}`;
   try {
     // visible loader
     wantLoaderVisible(true);
     // fetch api
     const data = await fetchWeatherData(API);
-    // render data on ui
-    renderChangesToUi(data);
-
+    // hide loader
+    wantLoaderVisible(false);
     // display
     weatherInterface.classList.add("active");
     grantLocationInterface.classList.remove("active");
     searchWeatherInterface.classList.remove("active");
-    // hide loader
-    wantLoaderVisible(false);
+    // render data on ui
+    renderChangesToUi(data);
   } catch (err) {
     wantLoaderVisible(false);
     // show error fetching box
+    console.log(err);
   }
+}
+async function searchWeatherData() { 
+  const API = `https://api.openweathermap.org/data/2.5/weather?q=${searchInput.value}&appid=${API_AUTH}`;
+  
+  try {
+    // visible loader
+    wantLoaderVisible(true);
+    // fetch api
+    const data = await fetchWeatherData(API);
+    // hide loader
+    wantLoaderVisible(false);
+    // display
+    weatherInterface.classList.add("active");
+    searchWeatherInterface.classList.add("active");
+    // render data on ui
+    renderChangesToUi(data);
+  } catch (err) {
+    wantLoaderVisible(false);
+    // show error fetching box
+    console.log(err);
+  }
+
 }
 function switchTo(clickedTab) {
   if (clickedTab != currentTab) {
@@ -112,12 +136,24 @@ function handleSearchTab() {
 function setAttributesOnPageLoad() {
   checkLocalCoords();
 }
-function handleGrantLocation() {
-  navigator.geolocation.getCurrentPosition(setUserCoords);
-  grantLocationInterface.classList.remove("active");
-  userWeatherData();
+async function handleGrantLocation() {
+  await setUserCoords();
+  setTimeout(() => {
+    userWeatherData();
+  }, 250);
+}
+function handleFormClick(event) { 
+  if(searchInput.value == ""){
+    event.preventDefault();
+    return;
+  }
+  event.preventDefault();
+  searchWeatherData();
+
+
 }
 userTab.addEventListener("click", handleUserTab);
 searchTab.addEventListener("click", handleSearchTab);
 grantAccessButton.addEventListener("click", handleGrantLocation);
+searchForm.addEventListener('click' , handleFormClick);
 window.addEventListener("load", setAttributesOnPageLoad);
